@@ -1,4 +1,3 @@
-from flask import Flask
 import requests,uuid,xmltodict,json,base64,urllib.parse
 from requests.sessions import session
 app = Flask(__name__)
