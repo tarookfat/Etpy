@@ -10,7 +10,15 @@ import time
 from datetime import datetime, timedelta
 from requests.sessions import Session
 from Classes.Cash import BalancePaymentReply, Transaction, TransferPaymentReply
-from Classes.Normal import Gift,Constants,RechargeResponse,User,SubmitResponse,SendVerificationCodeResponse
+from Classes.Normal import (
+    Gift,
+    Constants,
+    RechargeResponse,
+    User,
+    SubmitResponse,
+    SendVerificationCodeResponse,
+)
+
 
 class Etisalat(object):
     headers = {
@@ -48,7 +56,7 @@ class Etisalat(object):
         self.platform = platform
         self.os_version = os_version
         self.device_id = "tarookissexyguy699"
-        self.user : User = None
+        self.user: User = None
         self.gifts = []
 
     def xmltojson(self, xml):
@@ -104,17 +112,20 @@ class Etisalat(object):
         return Transactions[:limit]
 
     def send_verification_code(self):
-        return SendVerificationCodeResponse(**self.xmltojson(
-            requests.get(
-                Constants.API_ENDPOINT
-                + f"/Saytar/rest/quickAccess/sendVerCodeQuickAccessV2?sendVerCodeQuickAccessRequest=<sendVerCodeQuickAccessRequest><udid>{self.device_id}</udid><dial>{self.phone}</dial></sendVerCodeQuickAccessRequest>",
-                headers=self.headers,
-            ).text)["sendVerCodeQuickAccessResponseV2"]
-    )
+        return SendVerificationCodeResponse(
+            **self.xmltojson(
+                requests.get(
+                    Constants.API_ENDPOINT
+                    + f"/Saytar/rest/quickAccess/sendVerCodeQuickAccessV2?sendVerCodeQuickAccessRequest=<sendVerCodeQuickAccessRequest><udid>{self.device_id}</udid><dial>{self.phone}</dial></sendVerCodeQuickAccessRequest>",
+                    headers=self.headers,
+                ).text
+            )["sendVerCodeQuickAccessResponseV2"]
+        )
 
     @property
     def save_session(self) -> str:
         return self.access_token
+
     def session_login(self, session):
         self.headers["Authorization"] = "Basic " + session
         self.access_token = session
@@ -131,8 +142,9 @@ class Etisalat(object):
         data2 = self.__get(
             f"/Saytar/rest/account/profile?req=<getCustomerProfileV4Request><nativeToken/><firstLoginAttempt>true</firstLoginAttempt><serviceClass>2094</serviceClass><thirdPartyType>firebase</thirdPartyType><versionNum>22.10.1</versionNum><billingProfileId>1-31DW-1861</billingProfileId><language>2</language><accountNumber>{self.account_number}</accountNumber><deviceId>{self.device_id}</deviceId><platform>{self.platform}</platform><versionCode>507</versionCode><deviceModelType>{self.device_name}</deviceModelType><osVersion>{self.os_version}</osVersion><notificationToken>cEcfpO9cSTCgZU-ibNyJMJ:APA91bGuTW23IvvPGzQ2CaS1tBSDdQAWDezZDLje6rJTQy4uh2R_KT-2_YyeLzmoGj0vubIZKwnMSpDBOsQDP2XdE4dzLL2FRFbpbMUTiCpzeAFB9ngfeiNucd0YhtMxGQVdVfFMa8NH</notificationToken></getCustomerProfileV4Request>"
         )["getAccountProfileResponse"]["contracts"]["contract"]
-        self.user = User(**{**data,**data2})
+        self.user = User(**{**data, **data2})
         return True
+
     def login_with_code(self, user_code):
         data = self.__post(
             "/Saytar/rest/quickAccess/verifyCodeQuickAccess",
@@ -168,7 +180,7 @@ class Etisalat(object):
                     # self.last_name = data["lastName"]
                     # self.address = data["address"]
                     # self.plan = data["ratePlan"]
-                    self.user = User(**{**data1,**data2})
+                    self.user = User(**{**data1, **data2})
                     return True
                 else:
                     raise ("Error Key JSESSIONID is not found")
@@ -213,9 +225,11 @@ class Etisalat(object):
                 return gift
 
     def getdailygifts(self):
-        print(self.__get(
+        print(
+            self.__get(
                 f"/Saytar/rest/dailyTipsWS/dailyTipGiftV3?req=%3CdailyTipRequest%3E%3CsubscriberNumber%3E{self.phone}%3C%2FsubscriberNumber%3E%3Clanguage%3E2%3C%2Flanguage%3E%3C%2FdailyTipRequest%3E"
-            )["dailyTipNewResponse"])
+            )["dailyTipNewResponse"]
+        )
         gifts = [
             Gift(
                 gift["dailyTips"]["dailyTip"]["params"]["param"][2]["value"],

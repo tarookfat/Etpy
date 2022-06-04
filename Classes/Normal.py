@@ -1,12 +1,17 @@
 class User:
-    def __init__(self,firstName,lastName,address,accountNumber,ratePlan,*args,**k) -> None:
+    def __init__(
+        self, firstName, lastName, address, accountNumber, ratePlan, *args, **k
+    ) -> None:
         self.first_name = firstName
         self.last_name = lastName
         self.address = address
         self.plan = ratePlan
         self.account_number = accountNumber
+
     def __repr__(self) -> str:
         return f"<User({self.account_number},{self.first_name},{self.last_name})>"
+
+
 class RechargeResponse:
     def __init__(self, data):
         if data.get("rechargeResponse") != None:
@@ -17,8 +22,10 @@ class RechargeResponse:
             self.requestId = data["rechargeResponse"]["requestId"]
         else:
             raise ("An expected error in server response : " + data)
+
+
 class SendVerificationCodeResponse:
-    def __init__(self,status,verCodeDuration,**kwargs) -> None:
+    def __init__(self, status, verCodeDuration, **kwargs) -> None:
         self.status = status
         self.duration = verCodeDuration
         self.errorCode = None
@@ -26,11 +33,14 @@ class SendVerificationCodeResponse:
         if "fault" in kwargs.keys():
             data = kwargs["fault"]
             self.errorCode = data["errorCode"]
-            self.message = data['message']
+            self.message = data["message"]
             self.userMessageEn = data["userMessageEn"]
             self.userMessageAr = data["userMessageAr"]
+
     def __repr__(self) -> str:
         return f"<Response(IsSuccess:{self.status},errorCode:{self.errorCode},message:{self.message})>"
+
+
 class SubmitResponse:
     def __init__(self, data):
         if data.get("submitResponse") != None:
@@ -41,8 +51,11 @@ class SubmitResponse:
             self.orderId = data["submitResponse"]["orderId"]
         else:
             raise ("An expected error in server response : " + data)
+
     def __repr__(self) -> str:
         return f"<SubmitResponse(IsSuccess:{self.status},OrderId:{self.orderId})>"
+
+
 class Gift:
     def __init__(self, gift_units, gift_number, is_redeemed, is_today_gift):
         self.value = gift_units

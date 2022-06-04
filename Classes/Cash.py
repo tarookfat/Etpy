@@ -2,6 +2,7 @@ import enum
 from multiprocessing.sharedctypes import Value
 from pydantic import BaseModel
 
+
 class BalancePaymentReply:
     def __init__(self, json):
         if json["PaymentReply"].get("status") != None:
@@ -11,10 +12,14 @@ class BalancePaymentReply:
             self.Balance = json["Balance"]
         else:
             raise ("Invaild pincode! " + json)
+
+
 class BalanceReplyModel(BaseModel):
-    TransactionID:str
-    Message:str
-    Balance:float
+    TransactionID: str
+    Message: str
+    Balance: float
+
+
 class TransactionTypes(enum.Enum):
     Transfer = "Transfer"
     Bill = "Bill payment"
@@ -22,6 +27,8 @@ class TransactionTypes(enum.Enum):
     TopUp = "Top up"
     Utils = "Request to pay"
     SelfTopUp = "Self-Top up"
+
+
 class Transaction:
     def __init__(
         self,
