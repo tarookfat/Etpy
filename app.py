@@ -10,17 +10,9 @@ import time
 from datetime import datetime, timedelta
 from requests.sessions import Session
 from Classes.Cash import BalancePaymentReply, Transaction, TransferPaymentReply
-from Classes.Normal import (
-    Gift,
-    Constants,
-    RechargeResponse,
-    User,
-    SubmitResponse,
-    SendVerificationCodeResponse,
-)
+from Classes.Normal import Gift,Constants,RechargeResponse,User,SubmitResponse,SendVerificationCodeResponse
 
-
-class Etisalat(object):
+class Client:
     headers = {
         "applicationVersion": "2",
         "Content-Type": "text/xml;charset=UTF-8",
@@ -41,7 +33,6 @@ class Etisalat(object):
         "ADRUM": "isAjax:true",
     }
     access_token = ""
-
     def __init__(
         self,
         phone,
@@ -50,16 +41,32 @@ class Etisalat(object):
         platform="IOS",
         os_version="15",
     ):
+        """
+        Creating a new instance of client Client
+        Parameters:
+            Required :
+                phone -> your etisalat phone number
+            Optional:
+                device_id -> you can pass your own device id or pass a random value from uuid module
+                device_name -> you can pass a device name (the device name you put here will be shown in MyEtisalat app logs)
+                platform    -> IOS or Android default is Android and this parameter also will be shown in MyEtisalat application logs
+                os_version  -> Operating System Version  
+        """
+
         self.phone = phone[1:]
         self.device_id = device_id
         self.device_name = device_name
         self.platform = platform
         self.os_version = os_version
         self.device_id = "tarookissexyguy699"
-        self.user: User = None
+        self.user : User = None
         self.gifts = []
 
-    def xmltojson(self, xml):
+    def xmltodict(self, xml):
+        """
+        Etisalat api is returning a xml response !
+        this function is used to convert xml to python dict
+        """
         try:
             return json.loads(
                 json.dumps(
@@ -70,6 +77,10 @@ class Etisalat(object):
             print(xml, error)
 
     def wait_for_cash(self, amount):
+        """
+        this function is used to wait for specfic amount to be received in etisalat cash wallet 
+        once this amount is recevied the function will return true
+        """
         balance = int(float(self.cash_login(self.pincode).Balance))
         new_balance = balance + amount
         print("Waiting for balance ...")
@@ -81,6 +92,9 @@ class Etisalat(object):
         return True
 
     def cash_transfer(self, phone, amount) -> TransferPaymentReply:
+        """
+        with this function you can transfer money to any mezaa wallet 
+        """
         response = self.__post(
             "/Saytar/rest/etisalatpay/service/TRANSFER",
             data=f"<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><PaymentRequest><Amount>{amount}</Amount><BNumber>{phone[1:]}</BNumber><ClientID>1234</ClientID><ClientLanguageID>2</ClientLanguageID><MSISDN>{self.phone}</MSISDN><Password>{self.pincode}</Password><Username>{self.phone}</Username></PaymentRequest>",
@@ -88,6 +102,10 @@ class Etisalat(object):
         return TransferPaymentReply(**response)
 
     def cash_login(self, pincode) -> BalancePaymentReply:
+        """
+        this function must be called before starting calling any cash function 
+        it's so important because it save your wallet's pen 
+        """
         self.pincode = pincode
         return BalancePaymentReply(
             self.__post(
@@ -97,6 +115,11 @@ class Etisalat(object):
         )
 
     def get_cash_transactions(self, limit=None):
+        """
+        getting your etisalat cash wallet transactions history 
+        from date 2021-01-01T00:00:00+00:00
+        until now 
+        """
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
         response = self.__post(
             "/Saytar/rest/etisalatpay/service/GET_TRANSACTIONS_HISTORY",
@@ -112,20 +135,24 @@ class Etisalat(object):
         return Transactions[:limit]
 
     def send_verification_code(self):
-        return SendVerificationCodeResponse(
-            **self.xmltojson(
-                requests.get(
-                    Constants.API_ENDPOINT
-                    + f"/Saytar/rest/quickAccess/sendVerCodeQuickAccessV2?sendVerCodeQuickAccessRequest=<sendVerCodeQuickAccessRequest><udid>{self.device_id}</udid><dial>{self.phone}</dial></sendVerCodeQuickAccessRequest>",
-                    headers=self.headers,
-                ).text
-            )["sendVerCodeQuickAccessResponseV2"]
-        )
+        """
+        Sending a verification code to complete the first login to MyEtisalat using this package
+        """
+        return SendVerificationCodeResponse(**self.xmltodict(
+            requests.get(
+                Constants.API_ENDPOINT
+                + f"/Saytar/rest/quickAccess/sendVerCodeQuickAccessV2?sendVerCodeQuickAccessRequest=<sendVerCodeQuickAccessRequest><udid>{self.device_id}</udid><dial>{self.phone}</dial></sendVerCodeQuickAccessRequest>",
+                headers=self.headers,
+            ).text)["sendVerCodeQuickAccessResponseV2"]
+    )
 
     @property
     def save_session(self) -> str:
+        """
+        Saving Current Seession so you do not have to login every time with the verification code
+        next time you will use session_login function
+        """
         return self.access_token
-
     def session_login(self, session):
         self.headers["Authorization"] = "Basic " + session
         self.access_token = session
@@ -137,15 +164,17 @@ class Etisalat(object):
         )
         self.session = response.cookies["JSESSIONID"]
         self.headers["cookie"] = "JSESSIONID=" + self.session + ";"
-        data = self.xmltojson(response.text)["loginResponseWithPlan"]
+        data = self.xmltodict(response.text)["loginResponseWithPlan"]
         self.account_number = data["accountNumber"]
         data2 = self.__get(
             f"/Saytar/rest/account/profile?req=<getCustomerProfileV4Request><nativeToken/><firstLoginAttempt>true</firstLoginAttempt><serviceClass>2094</serviceClass><thirdPartyType>firebase</thirdPartyType><versionNum>22.10.1</versionNum><billingProfileId>1-31DW-1861</billingProfileId><language>2</language><accountNumber>{self.account_number}</accountNumber><deviceId>{self.device_id}</deviceId><platform>{self.platform}</platform><versionCode>507</versionCode><deviceModelType>{self.device_name}</deviceModelType><osVersion>{self.os_version}</osVersion><notificationToken>cEcfpO9cSTCgZU-ibNyJMJ:APA91bGuTW23IvvPGzQ2CaS1tBSDdQAWDezZDLje6rJTQy4uh2R_KT-2_YyeLzmoGj0vubIZKwnMSpDBOsQDP2XdE4dzLL2FRFbpbMUTiCpzeAFB9ngfeiNucd0YhtMxGQVdVfFMa8NH</notificationToken></getCustomerProfileV4Request>"
         )["getAccountProfileResponse"]["contracts"]["contract"]
-        self.user = User(**{**data, **data2})
+        self.user = User(**{**data,**data2})
         return True
-
     def login_with_code(self, user_code):
+        """
+        with this function you should login with the verification code sent by send_verification_code function
+        """
         data = self.__post(
             "/Saytar/rest/quickAccess/verifyCodeQuickAccess",
             f"<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><verifyCodeQuickAccessRequest><dial>{self.phone}</dial><udid>{self.device_id}</udid><verCode>{user_code}</verCode></verifyCodeQuickAccessRequest>",
@@ -167,34 +196,28 @@ class Etisalat(object):
                 if "JSESSIONID" in response.cookies:
                     self.session = response.cookies["JSESSIONID"]
                     self.headers["cookie"] = "JSESSIONID=" + self.session + ";"
-                    data1 = self.xmltojson(response.text)["loginResponseWithPlan"]
-                    # self.user_info = data
+                    data1 = self.xmltodict(response.text)["loginResponseWithPlan"]
                     self.account_number = data1["accountNumber"]
-                    # self.account_id = data["accountId"]
-                    # self.plan_name = data["planName"]
                     data2 = self.__get(
                         f"/Saytar/rest/account/profile?req=<getCustomerProfileV4Request><nativeToken/><firstLoginAttempt>true</firstLoginAttempt><serviceClass>2094</serviceClass><thirdPartyType>firebase</thirdPartyType><versionNum>22.10.1</versionNum><billingProfileId>1-31DW-1861</billingProfileId><language>2</language><accountNumber>{self.account_number}</accountNumber><deviceId>{self.device_id}</deviceId><platform>{self.platform}</platform><versionCode>507</versionCode><deviceModelType>{self.device_name}</deviceModelType><osVersion>{self.os_version}</osVersion><notificationToken>cEcfpO9cSTCgZU-ibNyJMJ:APA91bGuTW23IvvPGzQ2CaS1tBSDdQAWDezZDLje6rJTQy4uh2R_KT-2_YyeLzmoGj0vubIZKwnMSpDBOsQDP2XdE4dzLL2FRFbpbMUTiCpzeAFB9ngfeiNucd0YhtMxGQVdVfFMa8NH</notificationToken></getCustomerProfileV4Request>"
                     )["getAccountProfileResponse"]["contracts"]["contract"]
-                    # self.first_name = data["firstName"]
-                    # self.last_name = data["fname"]
-                    # self.last_name = data["lastName"]
-                    # self.address = data["address"]
-                    # self.plan = data["ratePlan"]
-                    self.user = User(**{**data1, **data2})
+                    self.user = User(**{**data1,**data2})
                     return True
                 else:
                     raise ("Error Key JSESSIONID is not found")
         return False
-
-    def loginWithJsonId(self, JsonId):
-        self.headers["cookie"] = "JSESSIONID=" + JsonId + ";"
-
     def zero11_get(self):
+        """
+        Get the eligiable 011 offers for the current user
+        """
         return self.__get(
             f"/Saytar/rest/zero11/offers?req=<dialAndLanguageRequest><subscriberNumber>{self.phone}</subscriberNumber><language>2</language></dialAndLanguageRequest>"
         )["mabCategorizedProductsResponse"]["mabCategoryList"]
 
     def zero11_order(self, offer_id) -> SubmitResponse:
+        """
+        Redeem 011 offer which is obtained by zero11_get function
+        """
         return SubmitResponse(
             self.__post(
                 "/Saytar/rest/zero11/submitOrder",
@@ -203,14 +226,14 @@ class Etisalat(object):
         )
 
     def __post(self, path, data):
-        return self.xmltojson(
+        return self.xmltodict(
             requests.post(
                 Constants.API_ENDPOINT + path, data=data, headers=self.headers
             ).text
         )
 
     def __get(self, path):
-        return self.xmltojson(
+        return self.xmltodict(
             requests.get(Constants.API_ENDPOINT + path, headers=self.headers).text
         )
 
@@ -225,11 +248,9 @@ class Etisalat(object):
                 return gift
 
     def getdailygifts(self):
-        print(
-            self.__get(
+        print(self.__get(
                 f"/Saytar/rest/dailyTipsWS/dailyTipGiftV3?req=%3CdailyTipRequest%3E%3CsubscriberNumber%3E{self.phone}%3C%2FsubscriberNumber%3E%3Clanguage%3E2%3C%2Flanguage%3E%3C%2FdailyTipRequest%3E"
-            )["dailyTipNewResponse"]
-        )
+            )["dailyTipNewResponse"])
         gifts = [
             Gift(
                 gift["dailyTips"]["dailyTip"]["params"]["param"][2]["value"],
@@ -253,11 +274,17 @@ class Etisalat(object):
         )
 
     def getbalance(self):
+        """
+        Get current User Balance
+        """
         return self.__get(
             f"/Saytar/rest/servicemanagement/getGenericConsumptions?requestParam=<dialAndLanguageRequest><subscriberNumber>{self.phone}</subscriberNumber><language>2</language></dialAndLanguageRequest>"
         )["getConsumptionResponse"]["balance"]
 
     def scratchcard(self, voucher) -> RechargeResponse:
+        """
+        Balance Rechange using scratch card 
+        """
         return RechargeResponse(
             self.__post(
                 f"/Saytar/rest/digitalIncentive/recharge",
@@ -266,9 +293,15 @@ class Etisalat(object):
         )
 
     def callingnumbers(self):
+        """
+        Get the calling numbers for current users
+        """
         return [item["secondDial"] for item in self.callhistory()]
 
     def callhistory(self):
+        """
+        Get the call log for current user
+        """
         calls = []
         for days in range(30):
             past_date = str(datetime.today() - timedelta(days=days))
