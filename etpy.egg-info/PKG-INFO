@@ -1,3 +1,19 @@
+Metadata-Version: 2.1
+Name: etpy
+Version: 0.0.3
+Summary: Reverse Engineering of My Etisalat App
+Home-page: UNKNOWN
+Author: TarekTurbo (Tarek Abdelraheem)
+Author-email: <tarekthedream@gmail.com>
+License: UNKNOWN
+Keywords: python,Reverse,Enginner,My Etisalat,Internet in egypt,egpt,etisalat,masr,etisalat masr
+Platform: UNKNOWN
+Classifier: Development Status :: 1 - Planning
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
 # Etpy
 Etpy is a Reverse Engineering of MyEtisalat Masr android application
 with this package you can control you etisalat number including cash wallet with python
@@ -42,6 +58,8 @@ $ python -m pip install etpy
     - Purchase 
     - Bank to Wallet
  
+
+
 
 
 
