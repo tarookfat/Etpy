@@ -9,8 +9,8 @@ import xmltodict
 import time
 from datetime import datetime, timedelta
 from requests.sessions import Session
-from Classes.Cash import BalancePaymentReply, Transaction, TransferPaymentReply
-from Classes.Normal import Gift,Constants,RechargeResponse,User,SubmitResponse,SendVerificationCodeResponse
+from .Cash import *
+from .Normal import *
 
 class Client:
     headers = {
