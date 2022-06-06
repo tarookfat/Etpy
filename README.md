@@ -1,6 +1,6 @@
 # Etpy
 Etpy is a Reverse Engineering of MyEtisalat Masr android application
-with this package you can control you etisalat number including cash wallet with python
+with this package you can control your etisalat number including cash wallet with python
 ```python
 import from etpy import Client
 client = Client("011xxxxxxxx") # here you must put your etisalat phone number
