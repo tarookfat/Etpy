@@ -1,4 +1,4 @@
-# Etpy
+# Etpy | MyEtisalat Reverse Engineering
 Etpy is a Reverse Engineering of MyEtisalat Masr android application
 with this package you can control your etisalat number including cash wallet with python
 ```python
