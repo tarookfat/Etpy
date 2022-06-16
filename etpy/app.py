@@ -122,7 +122,7 @@ class Client:
 
         return CashoutPaymentReply(**self.__post("/Saytar/rest/etisalatpay/service/ATM_CASHOUT",data=f"<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><PaymentRequest><Amount>{amount}</Amount><ClientLanguageID>2</ClientLanguageID><MSISDN>{self.phone}</MSISDN><Password>{self.pincode}</Password><Username>{self.phone}</Username></PaymentRequest>")["PaymentRequest"])
     def generate_online_shopping_card(self,limit):
-        if " Generated Successfully" in  str(self.__post("/Saytar/rest/etisalatpay/service/VCN",data=f"<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><PaymentRequest><Amount>{limit}</Amount><ClientID>1234</ClientID><ClientLanguageID>2</ClientLanguageID><MSISDN>{self.phone}</MSISDN><Password>{self.pincode}</Password><Username>{self.phone}</Username></PaymentRequest>"))):
+        if " Generated Successfully" in  str(self.__post("/Saytar/rest/etisalatpay/service/VCN",data=f"<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><PaymentRequest><Amount>{limit}</Amount><ClientID>1234</ClientID><ClientLanguageID>2</ClientLanguageID><MSISDN>{self.phone}</MSISDN><Password>{self.pincode}</Password><Username>{self.phone}</Username></PaymentRequest>")):
             return True
         else :return False
     def cash_balance_recharge(self,amount,phone=None):
