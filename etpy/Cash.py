@@ -1,7 +1,16 @@
 import enum
 from multiprocessing.sharedctypes import Value
 from pydantic import BaseModel
-
+class CashoutPaymentReply:
+    def __init__(self,status,TransactionID,Message,*a,**k) -> None:
+        self.status = status 
+        self.TransactionID = TransactionID
+        self.Message = Message
+        if self.status:
+            self.ATM_CODE = str(self.Message).split("(")[1].split(")")[0].replace(" ","")
+            print(self.Message)
+    def __repr__(self) -> str:
+        return f"CashOut(IsSuccess:{self.status},TransactionID:{self.TransactionID},Message:{self.Message})"
 class BalancePaymentReply:
     def __init__(self, json):
         if json["PaymentReply"].get("status") != None:

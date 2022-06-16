@@ -36,9 +36,9 @@ $ python -m pip install etpy
     - Sallefny 3la nota 
     - Megabytes 3al nota
 - Cash
-    - Balance Rechrage
-    - Generating Online Payments Cards
-    - Cash Out
+    - ~~Balance Rechrage~~ (done)
+    - ~~Generating Online Payments Cards~~ (done)
+    - ~~Cash Out~~ (done)
     - Purchase 
     - Bank to Wallet
  

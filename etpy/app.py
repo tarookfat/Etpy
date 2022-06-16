@@ -5,6 +5,7 @@ import random
 import urllib.parse
 import uuid
 import requests
+from sqlalchemy import true
 import xmltodict
 import time
 from datetime import datetime, timedelta
@@ -113,7 +114,23 @@ class Client:
                 data=f"<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><PaymentRequest><ClientLanguageID>2</ClientLanguageID><MSISDN>{self.phone}</MSISDN><Password>{pincode}</Password><Username>{self.phone}</Username></PaymentRequest>",
             )
         )
+    def atm_cashout(self,amount):
+        """
+        Minmum cashout amount : 50
+        Supported Banks :National Bank of Egypt,Banque Misr,CIB,Banque Du Cairo, Alex Bank,QNB AlAhli,Suez Canal Bank,United Bank,Bank Audi,Ahli United Bank,Housing &Development Bank
+        """
 
+        return CashoutPaymentReply(**self.__post("/Saytar/rest/etisalatpay/service/ATM_CASHOUT",data=f"<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><PaymentRequest><Amount>{amount}</Amount><ClientLanguageID>2</ClientLanguageID><MSISDN>{self.phone}</MSISDN><Password>{self.pincode}</Password><Username>{self.phone}</Username></PaymentRequest>")["PaymentRequest"])
+    def generate_online_shopping_card(self,limit):
+        if " Generated Successfully" in  str(self.__post("/Saytar/rest/etisalatpay/service/VCN",data=f"<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><PaymentRequest><Amount>{limit}</Amount><ClientID>1234</ClientID><ClientLanguageID>2</ClientLanguageID><MSISDN>{self.phone}</MSISDN><Password>{self.pincode}</Password><Username>{self.phone}</Username></PaymentRequest>"))):
+            return True
+        else :return False
+    def cash_balance_recharge(self,amount,phone=None):
+        if phone == None:
+            phone = self.phone
+        if "successfully" in str(self.__post("/Saytar/rest/etisalatpay/service/RECHARGE",data=f"<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><PaymentRequest><Amount>{amount}</Amount><BNumber>{phone}</BNumber><ClientID>1234</ClientID><ClientLanguageID>2</ClientLanguageID><MSISDN>{self.phone}</MSISDN><Password>{self.pincode}</Password><Username>{self.phone}</Username></PaymentRequest>")):
+            return True
+        else :return False
     def get_cash_transactions(self, limit=None):
         """
         getting your etisalat cash wallet transactions history 
