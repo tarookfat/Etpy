@@ -14,7 +14,7 @@ print(client.getbalance()) # Printing User Balance
 ```console
 $ python -m pip install etpy
 ```
-## Suported Features
+## Supported Features
 - OTP Login
 - Session Login 
 - Getting User Balance
