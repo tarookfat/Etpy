@@ -5,7 +5,6 @@ import random
 import urllib.parse
 import uuid
 import requests
-from sqlalchemy import true
 import xmltodict
 import time
 from datetime import datetime, timedelta
