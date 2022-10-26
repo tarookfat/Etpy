@@ -6,10 +6,25 @@ from etpy import Client
 client = Client("011xxxxxxxx") # here you must put your etisalat phone number
 client.send_verification_code() # We are using this function to send verification code to procced the login request
 client.login_with_code(input("Code ?  : ")) # here you must enter the verification code recevied on your phone
-print(client.save_session) # Use this function to save session (for future login)
 print(client.getbalance()) # Printing User Balance
-
 ```
+### Saving Session 
+```python
+print(client.access_token) # printing current user session
+```
+### Login with Saved Session
+```python
+client.session_login("xxxxxxxxxxxxxxxxxxxxxxxxxx....")
+```
+### Using Etisalat Cash Functions 
+```python
+client.cash_login("your cash wallet pincode") 
+client.generate_online_shopping_card(1)  # Generating Online Card with x limit
+client.cash_card_online_deposit(amount,"pan","expire-month","expire-year(2 digits only)","cvv") # Deposit Wallet With Credit Card (Still Developing)
+client.cash_transfer("phone-number","amount-to-transfer") # transfer cash to any meeza wallet in egypt
+client.wait_for_cash() # Wait for x amount and once amount is received the function will releasd
+```
+
 ## Installing Etpy
 ```console
 $ python -m pip install etpy
