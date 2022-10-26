@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import codecs
 import os
-VERSION = '0.0.12'
+VERSION = '0.0.13'
 DESCRIPTION = 'Reverse Engineering of My Etisalat App'
 try:
     import pypandoc

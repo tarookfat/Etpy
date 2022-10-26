@@ -55,6 +55,7 @@ class Client:
         """
 
         self.phone = phone[1:]
+        self.MAB_SESSION_ID = ""
         self.device_id = device_id
         self.device_name = device_name
         self.platform = platform
@@ -101,6 +102,52 @@ class Client:
             data=f"<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><PaymentRequest><Amount>{amount}</Amount><BNumber>{phone[1:]}</BNumber><ClientID>1234</ClientID><ClientLanguageID>2</ClientLanguageID><MSISDN>{self.phone}</MSISDN><Password>{self.pincode}</Password><Username>{self.phone}</Username></PaymentRequest>",
         )["PaymentReply"]
         return TransferPaymentReply(**response)
+    def cash_card_online_deposit(self,amount,pan,expire_month,expiry_year,cvv):
+        headers = self.headers.copy()
+        headers["MAB_SESSION_ID"] = self.headers["cookie"]
+        posted_data = {
+    "amount": float(amount),
+    "cardPan": pan,
+    "cardType": "Visa",
+    "cartId": "",
+    "channel": "22",
+    "cvc": cvv,
+    "directDebit": False,
+    "expiryMonth": expire_month,
+    "expiryYear": expiry_year,
+    "msisdn": self.phone,
+    "name": "Tarek",
+    "parameters": [],
+    "paymentDesc": "AVL",
+    "receivingMsisdn": self.phone,
+    "save": True,
+    "token": "",
+    "transferPurpose": "Gifts"
+}
+        url = "https://digitalpayment.etisalat.eg/digitalpayment/payFirstTimeWithCC"
+
+        headers = {
+        'MAB_SESSION_ID': f'JSESSIONID={self.session}; path=/; HttpOnly',
+        'Language': 'en',
+        'APP-BuildNumber': '738',
+        'APP-Version': '25.2.0',
+        'OS-Type': 'Android',
+        'OS-Version': '10',
+        'APP-STORE': 'GOOGLE',
+        'Is-Corporate': 'false',
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Connection': 'Keep-Alive',
+        'User-Agent': 'okhttp/3.12.8',
+        'ADRUM_1': 'isMobile:true',
+        'ADRUM': 'isAjax:true',
+        }
+
+        response = requests.request("POST", url, headers=headers, json=posted_data)
+
+        # print(response.text)
+        print("=====================================")
+        return response.json()["data"]["bankURL"]
+
 
     def cash_login(self, pincode) -> BalancePaymentReply:
         """
@@ -203,6 +250,7 @@ class Client:
             )
             self.basic_auth = base64.b64encode(session.encode("utf-8")).decode("ascii")
             self.headers["Authorization"] = "Basic " + self.basic_auth
+            self.access_token = self.basic_auth
             for x in range(10):
                 response = requests.post(
                     Constants.API_ENDPOINT
@@ -242,10 +290,12 @@ class Client:
             )
         )
 
-    def __post(self, path, data):
+    def __post(self, path, data,headers = None):
+        if headers ==None:
+            headers = self.headers
         return self.xmltodict(
             requests.post(
-                Constants.API_ENDPOINT + path, data=data, headers=self.headers
+                Constants.API_ENDPOINT + path, data=data, headers=headers
             ).text
         )
 
